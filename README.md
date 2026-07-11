@@ -4,14 +4,6 @@ Bu klasor, [Supertone/supertonic-3](https://huggingface.co/Supertone/supertonic-
 modelinin [Alibaba MNN](https://github.com/alibaba/MNN) motoruna kendi cevirdigimiz halidir.
 Amac: Raspberry Pi gibi dusuk guclu cihazlarda ONNX Runtime'a gore cok daha hizli inference.
 
-## Neden kendi cevirimiz var?
-
-Resmi MNN portu ([yunfengwang/supertonic-tts-mnn](https://huggingface.co/yunfengwang/supertonic-tts-mnn),
-HuggingFace'te host edilen model agirliklari) v3'te Turkce icin `unicode_indexer.json`
-mapping hatasi tasiyor; Turkce karakterler (ç, ş, ğ, ö, ü, ı, İ) `<unk>` token'ina dusuyor,
-cikti anlamsiz ses oluyor. Bu klasordeki modeller orijinal ONNX'ten dogrudan cevrilmis ve
-resmi `unicode_indexer.json` ile Turkce'de dogrulanmis sekilde calisiyor.
-
 CLI kodu [vra/supertonic-mnn](https://github.com/vra/supertonic-mnn) (GitHub) reposundan
 alinmistir; sadece model agirliklari degistirilmis, kod ayni.
 
