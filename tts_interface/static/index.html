@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LYRA TTS Engine — Metni gerçek zamanlı, doğal sese dönüştür.">
+  <title>LYRA — TTS Engine</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="/logo/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/logo/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/logo/favicon-16x16.png">
+  <link rel="manifest" href="/logo/site.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Canvas background -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Noise texture overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Hidden ws status (functional, not visible) -->
+  <div id="ws-status" style="display:none;"><span class="ws-dot"></span><span class="ws-label"></span></div>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <h1 class="hero-title" id="hero-title">Lyra ile metni <span class="gradient-text">sese dönüştür</span>,<br>anında, doğal.</h1>
+    <p class="hero-sub" id="hero-sub">Türkçe için optimize MNN motoru — 10 farklı ses karakteri, gerçek zamanlı akış.</p>
+  </section>
+
+  <!-- ── MAIN CARD ── -->
+  <main class="main-card-wrap">
+    <div class="main-card">
+
+      <!-- Voice Selection Block -->
+      <div class="voice-row-wrap">
+        <div class="section-label" id="section-label">Ses Karakteri</div>
+        <div class="voice-grid-split" id="voice-grid">
+          <!-- Kadın Sesleri (Üstte) -->
+          <div class="voice-gender-row female-row">
+            <button class="vc active" data-voice="F1" data-gender="female" title="Buse — Kadın">
+              <span class="vc-av female">Bu</span>
+              <span class="vc-nm">Buse</span>
+            </button>
+            <button class="vc" data-voice="F2" data-gender="female" title="Elif — Kadın">
+              <span class="vc-av female">El</span>
+              <span class="vc-nm">Elif</span>
+            </button>
+            <button class="vc" data-voice="F3" data-gender="female" title="Derin — Kadın">
+              <span class="vc-av female">De</span>
+              <span class="vc-nm">Derin</span>
+            </button>
+            <button class="vc" data-voice="F4" data-gender="female" title="Merve — Kadın">
+              <span class="vc-av female">Me</span>
+              <span class="vc-nm">Merve</span>
+            </button>
+            <button class="vc" data-voice="F5" data-gender="female" title="Zeynep — Kadın">
+              <span class="vc-av female">Ze</span>
+              <span class="vc-nm">Zeynep</span>
+            </button>
+          </div>
+          <!-- Erkek Sesleri (Altta) -->
+          <div class="voice-gender-row male-row">
+            <button class="vc" data-voice="M1" data-gender="male" title="Bora — Erkek">
+              <span class="vc-av male">Bo</span>
+              <span class="vc-nm">Bora</span>
+            </button>
+            <button class="vc" data-voice="M2" data-gender="male" title="Can — Erkek">
+              <span class="vc-av male">Ca</span>
+              <span class="vc-nm">Can</span>
+            </button>
+            <button class="vc" data-voice="M3" data-gender="male" title="Hakan — Erkek">
+              <span class="vc-av male">Ha</span>
+              <span class="vc-nm">Hakan</span>
+            </button>
+            <button class="vc" data-voice="M4" data-gender="male" title="Deniz — Erkek">
+              <span class="vc-av male">De</span>
+              <span class="vc-nm">Deniz</span>
+            </button>
+            <button class="vc" data-voice="M5" data-gender="male" title="Yiğit — Erkek">
+              <span class="vc-av male">Yi</span>
+              <span class="vc-nm">Yiğit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text Area -->
+      <div class="textarea-block">
+        <textarea id="tts-text" placeholder="Seslendirilecek metni buraya yazın ya da yapıştırın...&#10;&#10;Sistem cümlelere böler, sırayla sentezler ve kesintisiz çalar." spellcheck="false"></textarea>
+        <div class="textarea-footer">
+          <span id="char-count" class="char-count">0 karakter</span>
+          <div class="textarea-actions">
+            <button class="btn-clear" id="btn-clear" title="Temizle">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Row -->
+      <div class="settings-row">
+        <div class="setting-item">
+          <label class="setting-label" for="param-lang" id="label-lang">Dil</label>
+          <div class="sel-wrap">
+            <select id="param-lang" class="setting-select">
+              <option value="tr" selected>Türkçe</option>
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="ko">한국어</option>
+              <option value="ja">日本語</option>
+            </select>
+            <svg class="sel-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div class="setting-item">
+          <label class="setting-label" for="param-precision" id="label-precision">Kalite</label>
+          <div class="sel-wrap">
+            <select id="param-precision" class="setting-select">
+              <option value="int8" selected>INT8 Optimize</option>
+              <option value="fp32">FP32 Yüksek</option>
+            </select>
+            <svg class="sel-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+        <div class="setting-item setting-slider">
+          <label class="setting-label" for="param-steps" id="label-steps">Adım <span class="slider-val" id="val-steps">6</span></label>
+          <input type="range" id="param-steps" min="1" max="10" step="1" value="6" class="s-range">
+        </div>
+        <div class="setting-item setting-slider">
+          <label class="setting-label" for="param-speed" id="label-speed">Hız <span class="slider-val" id="val-speed">1.05×</span></label>
+          <input type="range" id="param-speed" min="0.6" max="1.8" step="0.05" value="1.05" class="s-range">
+        </div>
+        <div class="setting-item setting-slider">
+          <label class="setting-label" for="param-silence" id="label-silence">Boşluk <span class="slider-val" id="val-silence">0.15s</span></label>
+          <input type="range" id="param-silence" min="0.0" max="1.0" step="0.05" value="0.15" class="s-range">
+        </div>
+      </div>
+
+      <!-- Generate Bar -->
+      <div class="generate-bar">
+        <button class="btn-gen" id="btn-generate">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Sentezle ve Çal
+        </button>
+        <button class="btn-stop" id="btn-stop" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+          Durdur
+        </button>
+        <button class="btn-dl" id="btn-download" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 15V3M12 15L8 11M12 15L16 11M19 17v2a2 2 0 01-2 2H7a2 2 0 01-2-2v-2"/></svg>
+          WAV İndir
+        </button>
+      </div>
+
+    </div><!-- /main-card -->
+  </main>
+
+  <!-- ── OUTPUT SECTION ── -->
+  <section class="output-section" id="output-section">
+
+    <!-- Visualizer -->
+    <div class="viz-card">
+      <div class="viz-header">
+        <div class="viz-status-row">
+          <span class="live-dot" id="viz-live-dot"></span>
+          <span class="viz-label" id="visualizer-overlay-text">Hazır</span>
+        </div>
+        <span class="progress-pill" id="queue-progress">—</span>
+      </div>
+      <div class="viz-wrap">
+        <canvas id="wave-canvas"></canvas>
+      </div>
+      <div class="download-info" id="download-desc-wrap" style="display:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 15V3M12 15L8 11M12 15L16 11M19 17v2a2 2 0 01-2 2H7a2 2 0 01-2-2v-2"/></svg>
+        <span id="download-desc">—</span>
+      </div>
+    </div>
+
+    <!-- Queue -->
+    <div class="queue-card" id="queue-card">
+      <div class="queue-empty" id="queue-placeholder">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.15"><path d="M9 19V6l12-3v13M9 19c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2zm12-3c0 1.1-1.34 2-3 2s-3-.9-3-2 1.34-2 3-2 3 .9 3 2z"/></svg>
+        <p id="queue-placeholder-text">Sentez başladığında cümleler burada görünür</p>
+      </div>
+      <div class="queue-list" id="queue-container"></div>
+    </div>
+
+  </section>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <span>LYRA TTS Engine &mdash; Developed by <a href="https://burakozmen.com" target="_blank" rel="noopener noreferrer"><strong>burakozmen.com</strong></a></span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
